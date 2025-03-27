@@ -14,9 +14,8 @@ from scipy.interpolate import interp1d
 #### Column 3: Phase in degrees   ####
 ######################################
 #### Output:                      ####
-#### Column 1 : Frequency in Hz   ####
-#### Column 2 : Magnitude in lin  ####
-#### Column 3 : Phase in radians  ####
+#### Column 1 : freq_Hz           ####
+#### Column 2 : complex S21       ####
 ######################################
 print(f"Define Organize_Date function...")
 def Organize_Data(raw_data):
@@ -66,77 +65,12 @@ def Organize_Data(raw_data):
     else:
         phase_rad = phase
 
+    S21 = mag_lin * np.exp(1j * phase_rad)
+
     # Stack the processed data
-    organized_data = np.column_stack((freq_Hz, mag_lin, phase_rad))
+    organized_data = np.column_stack((freq_Hz, S21))
 
     return organized_data
-
-###########################################
-#### Input:                            ####
-#### 1. organized data                 ####
-###########################################
-#### Output:                           ####
-#### 1. Frequency (GHz) vs Mag (dB)    ####
-#### 2. Frequency (GHz) vs Phase (deg) ####
-#### 3. Real(S21) vs Imag(S21)         ####
-###########################################
-print(f"Define the Plot_Data function...")
-def Plot_Data(organized_data):
-    # Extract values for plotting
-    freq_Hz = organized_data[:, 0]
-    mag_lin = organized_data[:, 1]
-    phase_rad = organized_data[:, 2]
-
-    # Convert frequency to GHz for plotting
-    freq_GHz = freq_Hz / 1e9
-
-    # Convert magnitude to dB for plotting
-    mag_dB = 20 * np.log10(mag_lin)
-    
-    # Convert phase to degree for plotting
-    phase_deg = np.rad2deg(phase_rad)
-    
-    # Compute real and imaginary parts of S21
-    S21 = mag_lin * np.exp(1j * phase_rad)
-    real_S21 = np.real(S21)
-    imag_S21 = np.imag(S21)
-
-    # Create figure
-    fig = plt.figure(figsize=(10, 5))
-
-    # Plot Frequency vs Magnitude (dB) - Left Top
-    ax1 = fig.add_subplot(2, 2, 1)
-    ax1.scatter(freq_GHz, mag_dB, color='blue', s=50, marker='o', label="Mag (dB)", alpha=1)
-    ax1.set_xlabel("Freq (GHz)")
-    ax1.set_ylabel("Mag (dB)")
-    ax1.set_title("Freq vs Mag")
-    ax1.grid(True)
-    ax1.legend()
-    ax1.set_xticks([np.min(freq_GHz), (np.min(freq_GHz)+np.max(freq_GHz))/2, np.max(freq_GHz)])
-
-    # Plot Frequency vs Phase (degrees) - Left Bottom
-    ax2 = fig.add_subplot(2, 2, 3)
-    ax2.scatter(freq_GHz, phase_deg, color='orange', s=50, marker='o', label="Phase (deg)", alpha=1)
-    ax2.set_xlabel("Freq (GHz)")
-    ax2.set_ylabel("Phase (deg)")
-    ax2.set_title("Freq vs Phase")
-    ax2.grid(True)
-    ax2.legend()
-    ax2.set_xticks([np.min(freq_GHz), (np.min(freq_GHz)+np.max(freq_GHz))/2, np.max(freq_GHz)])
-
-    # Plot Real(S21) vs Imag(S21) - Right
-    ax3 = fig.add_subplot(1, 2, 2)  # Ensures a single, right-side wide plot
-    ax3.scatter(real_S21, imag_S21, color='green', s=50, marker='o', label="S21 Complex Plane", alpha=1)
-    ax3.set_xlabel("Real(S21)")
-    ax3.set_ylabel("Imag(S21)")
-    ax3.set_title("S21 Complex Plane")
-    ax3.grid(True)
-    ax3.legend()
-    ax3.axis("equal")  # Ensures proper scaling of real/imag axes
-
-    # Improve layout spacing
-    plt.tight_layout()
-    plt.show()
 
 # %% (1) Cable Delay Removed - fit_cable_delay, fit_alpha
 #######################################
